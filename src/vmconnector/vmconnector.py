@@ -34,7 +34,7 @@ serve as a base for extending it and integrating it into other tools, e.g. VMwar
 import os
 import syslog
 import ConfigParser
-import pysphere
+from pysphere import VIServer
 
 class VMConnectorException(Exception):
     """
@@ -63,7 +63,7 @@ class VMConnector(object):
         self.vcenter  = config.get('Default', 'vcenter')
         self.username = config.get('Default', 'username')
         self.password = config.get('Default', 'password')
-        self.viserver = pysphere.VIServer()
+        self.viserver = VIServer()
         self.lockdir  = '/var/run/vm-connector'
         self.lockfile = os.path.join(self.lockdir, self.vcenter)
         self.ignore_locks = ignore_locks
@@ -111,7 +111,7 @@ class VMConnector(object):
         syslog.syslog('Disconnecting from vCenter %s' % self.vcenter)
         self.viserver.disconnect()
 
-        if not self.ignore_lock:
+        if not self.ignore_locks:
             os.unlink(self.lockfile)
 
 def load_config(path):
