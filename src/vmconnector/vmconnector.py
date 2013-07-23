@@ -51,7 +51,7 @@ class VMConnector(object):
     VMware vCenter and/or VMware ESX servers.
 
     """
-    def __init__(self, config, extra_attr=None):
+    def __init__(self, config, extra_attr=None, ignore_locks=False):
         """
         Initializes a new VMConnector object.
 
@@ -66,6 +66,7 @@ class VMConnector(object):
         self.viserver = pysphere.VIServer()
         self.lockdir  = '/var/run/vm-connector'
         self.lockfile = os.path.join(self.lockdir, self.vcenter)
+        self.ignore_locks = ignore_locks
 
         # load extra attributes from the config file
         if extra_attr and isinstance(extra_attr, (list, tuple)):
@@ -75,7 +76,7 @@ class VMConnector(object):
         if not os.path.exists(self.lockdir):
             os.mkdir(self.lockdir)
 
-    def connect(self, ignore_locks=False):
+    def connect(self):
         """
         Connect to a VMware vCenter server.
 
@@ -86,17 +87,16 @@ class VMConnector(object):
              VMPollerException
         
         """
-        if not ignore_locks:
+        if not self.ignore_locks:
             if os.path.exists(self.lockfile):
                 syslog.syslog('Lock file exists for vCenter %s, aborting ...' % self.vcenter)
                 raise VMConnectorException, 'Lock file exists for %s' % self.vcenter
+            else:
+                # create a lock file
+                with open(self.lockfile, 'w') as lockfile:
+                    lockfile.write(str(os.getpid()))
 
         syslog.syslog('Connecting to vCenter %s' % self.vcenter)
-
-        # create a lock file
-        with open(self.lockfile, 'w') as lockfile:
-            lockfile.write(str(os.getpid()))
-        
         self.viserver.connect(host=self.vcenter, user=self.username, password=self.password)
         
     def disconnect(self):
@@ -109,8 +109,10 @@ class VMConnector(object):
             return
         
         syslog.syslog('Disconnecting from vCenter %s' % self.vcenter)
-        os.unlink(self.lockfile)
         self.viserver.disconnect()
+
+        if not self.ignore_lock:
+            os.unlink(self.lockfile)
 
 def load_config(path):
     """
