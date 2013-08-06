@@ -47,7 +47,7 @@ class VMConnector(object):
     """
     VMConnector class.
 
-    The VMConnector class defines methods connecting and disconnecting from a
+    The VMConnector class defines methods for connecting and disconnecting from a
     VMware vCenter and/or VMware ESX servers.
 
     """
@@ -80,9 +80,6 @@ class VMConnector(object):
         """
         Connect to a VMware vCenter server.
 
-        Args:
-            ignore_locks (bool): Whether we ignore lock files or not
-        
         Raises:
              VMPollerException
         
