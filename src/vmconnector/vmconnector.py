@@ -57,13 +57,14 @@ class VMConnector(object):
         IOError
 
     """
-    def __init__(self, config_file, extra_attr=None, ignore_locks=False, lockdir='/var/run/vm-connector'):
+    def __init__(self, config_file, extra_attr=None, ignore_locks=False, lockdir='/var/run/vm-connector', keep_alive=False):
         """
         Initializes a new VMConnector object.
 
         Args:
             config_file (ConfigParser): The config file containing the connection details
             extra_attr  (list/tuple)  : A list or tuple of extra attributes to get from the config file
+            keep_alive  (bool)        : If True then request a persistent connection with the vCenter
 
         """
         if not os.path.exists(config_file):
@@ -79,6 +80,7 @@ class VMConnector(object):
         self.lockdir  = lockdir
         self.lockfile = os.path.join(self.lockdir, self.vcenter)
         self.ignore_locks = ignore_locks
+        self.keep_alive = keep_alive
 
         # load any extra attributes from the config file
         if extra_attr and isinstance(extra_attr, (list, tuple)):
@@ -88,7 +90,7 @@ class VMConnector(object):
         if not os.path.exists(self.lockdir):
             os.mkdir(self.lockdir)
 
-    def connect(self, keep_alive=False):
+    def connect(self):
         """
         Connect to a VMware vCenter server.
 
@@ -109,7 +111,7 @@ class VMConnector(object):
         self.viserver.connect(host=self.vcenter, user=self.username, password=self.password)
 
         # do we want to keep persistent connection to the vCenter
-        if keep_alive:
+        if self.keep_alive:
             self.viserver.keep_session_alive()
         
     def disconnect(self):
@@ -126,3 +128,10 @@ class VMConnector(object):
 
         if not self.ignore_locks:
             os.unlink(self.lockfile)
+
+    def reconnect(self):
+        """
+        Reconnect to the VMware vCenter server
+        """
+        self.disconnect()
+        self.connect()
