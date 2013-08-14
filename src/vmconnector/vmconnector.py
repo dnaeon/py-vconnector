@@ -26,7 +26,7 @@
 The 'vmconnector' module defines classes and methods for establishing a 
 connection to VMware vCenter and/or ESX servers.
 
-It's goal is to provide the basic primitives and interface required for
+It's purpose is to provide the basic primitives and interfaces required for
 connecting and disconnecting from a VMware vCenter server, thus allowing it to
 serve as a base for extending it and integrating it into other tools, e.g. VMware pollers.
 """
@@ -50,25 +50,37 @@ class VMConnector(object):
     The VMConnector class defines methods for connecting and disconnecting from a
     VMware vCenter and/or VMware ESX servers.
 
+    Returns:
+        VMConnector object
+    
+    Raises:
+        IOError
+
     """
-    def __init__(self, config, extra_attr=None, ignore_locks=False):
+    def __init__(self, config_file, extra_attr=None, ignore_locks=False, lockdir='/var/run/vm-connector'):
         """
         Initializes a new VMConnector object.
 
         Args:
-            config     (ConfigParser): A ConfigParser object containing the connection details
-            extra_attr (list/tuple)  : A list or tuple of extra attributes to get from the config file
+            config_file (ConfigParser): The config file containing the connection details
+            extra_attr  (list/tuple)  : A list or tuple of extra attributes to get from the config file
 
         """
+        if not os.path.exists(config_file):
+            raise IOError, 'Config file %s does not exists' % config_file
+
+        config = ConfigParser.ConfigParser()
+        config.read(config_file)
+        
         self.vcenter  = config.get('Default', 'vcenter')
         self.username = config.get('Default', 'username')
         self.password = config.get('Default', 'password')
         self.viserver = VIServer()
-        self.lockdir  = '/var/run/vm-connector'
+        self.lockdir  = lockdir
         self.lockfile = os.path.join(self.lockdir, self.vcenter)
         self.ignore_locks = ignore_locks
 
-        # load extra attributes from the config file
+        # load any extra attributes from the config file
         if extra_attr and isinstance(extra_attr, (list, tuple)):
             for eachAttr in extra_attr:
                 setattr(self, eachAttr, config.get('Default', eachAttr))
@@ -76,7 +88,7 @@ class VMConnector(object):
         if not os.path.exists(self.lockdir):
             os.mkdir(self.lockdir)
 
-    def connect(self):
+    def connect(self, keep_alive=False):
         """
         Connect to a VMware vCenter server.
 
@@ -95,6 +107,10 @@ class VMConnector(object):
 
         syslog.syslog('Connecting to vCenter %s' % self.vcenter)
         self.viserver.connect(host=self.vcenter, user=self.username, password=self.password)
+
+        # do we want to keep persistent connection to the vCenter
+        if keep_alive:
+            self.viserver.keep_session_alive()
         
     def disconnect(self):
         """
@@ -110,22 +126,3 @@ class VMConnector(object):
 
         if not self.ignore_locks:
             os.unlink(self.lockfile)
-
-def load_config(path):
-    """
-    Parses a configuration file containing connection details to a vCenter server.
-
-    Args:
-        path (str): Path to the configuration file to parse
-
-    Returns:
-        ConfigParser object
-
-    """
-    if not os.path.exists(path):
-        raise IOError, 'Config file %s does not exists' % path
-
-    config = ConfigParser.ConfigParser()
-    config.read(path)
-
-    return config
