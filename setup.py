@@ -7,5 +7,5 @@ setup(name='vmconnector',
       author_email='dnaeon@gmail.com',
       license='BSD',
       packages=['vmconnector'],
-      package_dir={'vmconnector': 'src/vmconnector'}
+      package_dir={'': 'src'}
 )
