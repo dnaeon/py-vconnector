@@ -76,7 +76,7 @@ class VMConnector(object):
         self.vcenter  = config.get('Default', 'vcenter')
         self.username = config.get('Default', 'username')
         self.password = config.get('Default', 'password')
-        self.timeout  = config.get('Default', 'timeout')
+        self.timeout  = int(config.get('Default', 'timeout'))
         self.viserver = VIServer()
         self.lockdir  = lockdir
         self.lockfile = os.path.join(self.lockdir, self.vcenter)
