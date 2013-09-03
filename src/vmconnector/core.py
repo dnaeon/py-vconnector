@@ -76,6 +76,7 @@ class VMConnector(object):
         self.vcenter  = config.get('Default', 'vcenter')
         self.username = config.get('Default', 'username')
         self.password = config.get('Default', 'password')
+        self.timeout  = config.get('Default', 'timeout')
         self.viserver = VIServer()
         self.lockdir  = lockdir
         self.lockfile = os.path.join(self.lockdir, self.vcenter)
@@ -90,12 +91,9 @@ class VMConnector(object):
         if not os.path.exists(self.lockdir):
             os.mkdir(self.lockdir)
 
-    def connect(self, timeout=0):
+    def connect(self):
         """
         Connect to a VMware vCenter server.
-
-        Args:
-            timeout: Seconds to timeout if a connection cannot be established
 
         Raises:
              VMPollerException
@@ -111,7 +109,7 @@ class VMConnector(object):
                     lockfile.write(str(os.getpid()))
 
         syslog.syslog('Connecting to vCenter %s' % self.vcenter)
-        self.viserver.connect(host=self.vcenter, user=self.username, password=self.password, sock_timeout=timeout)
+        self.viserver.connect(host=self.vcenter, user=self.username, password=self.password, sock_timeout=self.timeout)
 
         # do we want to keep persistent connection to the vCenter
         if self.keep_alive:
