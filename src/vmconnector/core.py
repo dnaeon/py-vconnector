@@ -32,7 +32,7 @@ serve as a base for extending it and integrating it into other tools, e.g. VMwar
 """
 
 import os
-import syslog
+import logging
 import ConfigParser
 from pysphere import VIServer
 
@@ -101,14 +101,14 @@ class VMConnector(object):
         """
         if not self.ignore_locks:
             if os.path.exists(self.lockfile):
-                syslog.syslog('Lock file exists for vCenter %s, aborting ...' % self.vcenter)
+                logging.error('Lock file exists for vCenter %s, aborting ...', self.vcenter)
                 raise VMConnectorException, 'Lock file exists for %s' % self.vcenter
             else:
                 # create a lock file
                 with open(self.lockfile, 'w') as lockfile:
                     lockfile.write(str(os.getpid()))
 
-        syslog.syslog('Connecting to vCenter %s' % self.vcenter)
+        logging.info('Connecting to vCenter %s', self.vcenter)
         self.viserver.connect(host=self.vcenter, user=self.username, password=self.password, sock_timeout=self.timeout)
 
         # do we want to keep persistent connection to the vCenter
@@ -121,10 +121,10 @@ class VMConnector(object):
 
         """
         if not self.viserver.is_connected():
-            syslog.syslog('No need to disconnect from %s, as we are not connected at all' % self.vcenter)
+            logging.info('No need to disconnect from %s, as we are not connected at all', self.vcenter)
             return
         
-        syslog.syslog('Disconnecting from vCenter %s' % self.vcenter)
+        logging.info('Disconnecting from vCenter %s', self.vcenter)
         self.viserver.disconnect()
 
         if not self.ignore_locks:
