@@ -7,7 +7,7 @@ setup(name='py-vconnector',
       author_email='dnaeon@gmail.com',
       license='BSD',
       packages=['vconnector'],
-      package_dir={'': 'src'}
+      package_dir={'': 'src'},
       install_requires=[
         'pysphere >= 0.1.8',
       ]
