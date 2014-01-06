@@ -23,8 +23,8 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """
-The 'vmconnector' module defines classes and methods for establishing a 
-connection to VMware vCenter and/or ESX servers.
+The vconnector module provides classes and methods for establishing a 
+connection to VMware vSphere server instance.
 
 It's purpose is to provide the basic primitives and interfaces required for
 connecting and disconnecting from a VMware vCenter server, thus allowing it to
@@ -36,30 +36,30 @@ import logging
 import ConfigParser
 from pysphere import VIServer
 
-class VMConnectorException(Exception):
+class VConnectorException(Exception):
     """
-    Generic VMConnector exception.
+    Generic VConnector exception.
 
     """
     pass
 
-class VMConnector(object):
+class VConnector(object):
     """
-    VMConnector class.
+    VConnector class.
 
-    The VMConnector class defines methods for connecting and disconnecting from a
-    VMware vCenter and/or VMware ESX servers.
+    The VConnector class defines methods for connecting and disconnecting from a
+    VMware vSphere server instance.
 
     Returns:
-        VMConnector object
+        VConnector object
     
     Raises:
         IOError
 
     """
-    def __init__(self, config_file, extra_attr=None, ignore_locks=False, lockdir='/var/run/vm-connector', keep_alive=False):
+    def __init__(self, config_file, extra_attr=None, ignore_locks=False, lockdir='/var/run/vconnector', keep_alive=False):
         """
-        Initializes a new VMConnector object.
+        Initializes a new VConnector object.
 
         Args:
             config_file (ConfigParser): The config file containing the connection details
@@ -93,22 +93,22 @@ class VMConnector(object):
 
     def connect(self):
         """
-        Connect to a VMware vCenter server.
+        Connect to a VMware vSphere server.
 
         Raises:
-             VMPollerException
+             VPollerException
         
         """
         if not self.ignore_locks:
             if os.path.exists(self.lockfile):
                 logging.error('Lock file exists for vCenter %s, aborting ...', self.vcenter)
-                raise VMConnectorException, 'Lock file exists for %s' % self.vcenter
+                raise VConnectorException, 'Lock file exists for %s' % self.vcenter
             else:
                 # create a lock file
                 with open(self.lockfile, 'w') as lockfile:
                     lockfile.write(str(os.getpid()))
 
-        logging.info('Connecting to vCenter %s', self.vcenter)
+        logging.info('Connecting to vSphere host %s', self.vcenter)
         self.viserver.connect(host=self.vcenter, user=self.username, password=self.password, sock_timeout=self.timeout)
 
         # do we want to keep persistent connection to the vCenter
@@ -117,14 +117,14 @@ class VMConnector(object):
         
     def disconnect(self):
         """
-        Disconnect from a VMware vCenter server.
+        Disconnect from a VMware vSphere server.
 
         """
         if not self.viserver.is_connected():
             logging.info('No need to disconnect from %s, as we are not connected at all', self.vcenter)
             return
         
-        logging.info('Disconnecting from vCenter %s', self.vcenter)
+        logging.info('Disconnecting from vSphere host %s', self.vcenter)
         self.viserver.disconnect()
 
         if not self.ignore_locks:
@@ -132,7 +132,7 @@ class VMConnector(object):
 
     def reconnect(self):
         """
-        Reconnect to the VMware vCenter server
+        Reconnect to the VMware vSphere server
         """
         self.disconnect()
         self.connect()
