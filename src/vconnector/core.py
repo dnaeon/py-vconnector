@@ -27,7 +27,7 @@ The vconnector module provides classes and methods for establishing a
 connection to VMware vSphere server instance.
 
 It's purpose is to provide the basic primitives and interfaces required for
-connecting and disconnecting from a VMware vCenter server, thus allowing it to
+connecting and disconnecting from a VMware vSphere server, thus allowing it to
 serve as a base for extending it and integrating it into other tools, e.g. VMware pollers.
 """
 
@@ -64,7 +64,7 @@ class VConnector(object):
         Args:
             config_file (ConfigParser): The config file containing the connection details
             extra_attr  (list/tuple)  : A list or tuple of extra attributes to get from the config file
-            keep_alive  (bool)        : If True then request a persistent connection with the vCenter
+            keep_alive  (bool)        : If True then request a persistent connection with the host
 
         """
         if not os.path.exists(config_file):
@@ -73,13 +73,13 @@ class VConnector(object):
         config = ConfigParser.ConfigParser()
         config.read(config_file)
         
-        self.vcenter  = config.get('Default', 'vcenter')
+        self.hostname  = config.get('Default', 'hostname')
         self.username = config.get('Default', 'username')
         self.password = config.get('Default', 'password')
         self.timeout  = int(config.get('Default', 'timeout'))
         self.viserver = VIServer()
         self.lockdir  = lockdir
-        self.lockfile = os.path.join(self.lockdir, self.vcenter)
+        self.lockfile = os.path.join(self.lockdir, self.hostname)
         self.ignore_locks = ignore_locks
         self.keep_alive = keep_alive
 
@@ -101,17 +101,17 @@ class VConnector(object):
         """
         if not self.ignore_locks:
             if os.path.exists(self.lockfile):
-                logging.error('Lock file exists for vCenter %s, aborting ...', self.vcenter)
-                raise VConnectorException, 'Lock file exists for %s' % self.vcenter
+                logging.error('Lock file exists for vSphere host %s, aborting ...', self.hostname)
+                raise VConnectorException, 'Lock file exists for %s' % self.hostname
             else:
                 # create a lock file
                 with open(self.lockfile, 'w') as lockfile:
                     lockfile.write(str(os.getpid()))
 
-        logging.info('Connecting to vSphere host %s', self.vcenter)
-        self.viserver.connect(host=self.vcenter, user=self.username, password=self.password, sock_timeout=self.timeout)
+        logging.info('Connecting to vSphere host %s', self.hostname)
+        self.viserver.connect(host=self.hostname, user=self.username, password=self.password, sock_timeout=self.timeout)
 
-        # do we want to keep persistent connection to the vCenter
+        # do we want to keep persistent connection to the host
         if self.keep_alive:
             self.viserver.keep_session_alive()
         
@@ -121,10 +121,10 @@ class VConnector(object):
 
         """
         if not self.viserver.is_connected():
-            logging.info('No need to disconnect from %s, as we are not connected at all', self.vcenter)
+            logging.info('No need to disconnect from %s, as we are not connected at all', self.hostname)
             return
         
-        logging.info('Disconnecting from vSphere host %s', self.vcenter)
+        logging.info('Disconnecting from vSphere host %s', self.hostname)
         self.viserver.disconnect()
 
         if not self.ignore_locks:
