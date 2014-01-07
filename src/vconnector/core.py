@@ -26,9 +26,6 @@
 The vconnector module provides classes and methods for establishing a 
 connection to VMware vSphere server instance.
 
-It's purpose is to provide the basic primitives and interfaces required for
-connecting and disconnecting from a VMware vSphere server, thus allowing it to
-serve as a base for extending it and integrating it into other tools, e.g. VMware pollers.
 """
 
 import os
@@ -73,7 +70,7 @@ class VConnector(object):
         config = ConfigParser.ConfigParser()
         config.read(config_file)
         
-        self.hostname  = config.get('Default', 'hostname')
+        self.hostname = config.get('Default', 'hostname')
         self.username = config.get('Default', 'username')
         self.password = config.get('Default', 'password')
         self.timeout  = int(config.get('Default', 'timeout'))
