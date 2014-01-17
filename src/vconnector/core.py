@@ -31,7 +31,7 @@ connection to VMware vSphere server instance.
 import os
 import logging
 import ConfigParser
-from pysphere import VIServer
+from pysphere import VIServer, MORTypes
 
 class VConnectorException(Exception):
     """
@@ -79,6 +79,9 @@ class VConnector(object):
         self.lockfile = os.path.join(self.lockdir, self.hostname)
         self.ignore_locks = ignore_locks
         self.keep_alive = keep_alive
+
+        self.host_mors = None
+        self.datastore_mors = None
 
         # load any extra attributes from the config file
         if extra_attr and isinstance(extra_attr, (list, tuple)):
@@ -133,3 +136,25 @@ class VConnector(object):
         """
         self.disconnect()
         self.connect()
+
+    def get_host_mors(self):
+        """
+        Discovers all HostSystem Managed Object References and returns a
+        dict with keys being the ESXi hostname and value it's MOR.
+
+        """
+        result = {v:k for k, v in self.viserver.get_hosts().items()}
+
+        return result
+
+    def get_datastore_mors(self):
+        """
+        Discovers all Datastore Managed Object References and returns a
+        dict with keys being the datastore url and values it's MOR.
+
+        """
+        result = self.viserver._retrieve_properties_traversal(property_names=['info.url'],
+                                                              obj_type=MORTypes.Datastore)
+        
+        return {p.Val:item.Obj for item in result for p in item.PropSet}
+    
