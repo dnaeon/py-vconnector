@@ -31,6 +31,8 @@ connection to VMware vSphere server instance.
 import os
 import logging
 import ConfigParser
+
+from time import time
 from pysphere import VIServer, MORTypes
 
 class VConnectorException(Exception):
@@ -74,15 +76,24 @@ class VConnector(object):
         self.username = config.get('Default', 'username')
         self.password = config.get('Default', 'password')
         self.timeout  = int(config.get('Default', 'timeout'))
+        self.cachettl = int(config.get('Default', 'cachettl'))
         self.viserver = VIServer()
         self.lockdir  = lockdir
         self.lockfile = os.path.join(self.lockdir, self.hostname)
         self.ignore_locks = ignore_locks
         self.keep_alive = keep_alive
 
-        self.host_mors = None
-        self.datastore_mors = None
-
+        self.mors_cache = {
+            'HostSystem': {
+                'objects': {},
+                'last_updated': 0,
+                },
+            'Datastore': {
+                'objects': {},
+                'last_updated': 0,
+                }
+            }
+        
         # load any extra attributes from the config file
         if extra_attr and isinstance(extra_attr, (list, tuple)):
             for eachAttr in extra_attr:
@@ -137,24 +148,51 @@ class VConnector(object):
         self.disconnect()
         self.connect()
 
-    def get_host_mors(self):
+    def mors_cache_needs_update(self, last_update):
         """
-        Discovers all HostSystem Managed Object References and returns a
-        dict with keys being the ESXi hostname and value it's MOR.
+        Checks whether a MOR cache is out-of-date.
+
+        Returns:
+            True if the cache is out-of-date, False otherwise.
 
         """
-        result = {v:k for k, v in self.viserver.get_hosts().items()}
+        now = time()
 
-        return result
+        if (now - last_update) > (self.cachettl * 60):
+            return True
 
-    def get_datastore_mors(self):
+        return False
+        
+    def update_host_mors(self):
         """
-        Discovers all Datastore Managed Object References and returns a
-        dict with keys being the datastore url and values it's MOR.
+        Updates the HostSystem MORs cache
 
         """
+        if not self.mors_cache_needs_update(self.mors_cache['HostSystem']['last_updated']):
+            return
+
+        logging.info('Updating HostSystem MORs cache')
+
+        mors = {v:k for k, v in self.viserver.get_hosts().items()}
+
+        self.mors_cache['HostSystem']['objects'].update(mors)
+        self.mors_cache['HostSystem']['last_updated'] = time()
+
+    def update_datastore_mors(self):
+        """
+        Updates the Datastore MORs cache
+
+        """
+        if not self.mors_cache_needs_update(self.mors_cache['Datastore']['last_updated']):
+            return
+
+        logging.info('Updating Datastore MORs cache')
+        
         result = self.viserver._retrieve_properties_traversal(property_names=['info.url'],
                                                               obj_type=MORTypes.Datastore)
         
-        return {p.Val:item.Obj for item in result for p in item.PropSet}
-    
+        mors = {p.Val:item.Obj for item in result for p in item.PropSet}
+
+        self.mors_cache['Datastore']['objects'].update(mors)
+        self.mors_cache['Datastore']['last_updated'] = time()
+
