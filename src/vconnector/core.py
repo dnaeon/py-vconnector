@@ -100,6 +100,10 @@ class VConnector(object):
                 'objects': {},
                 'last_updated': 0,
                 },
+            'ClusterComputeResource': {
+                'objects': {},
+                'last_updated': 0,
+                }
             }
         
         # load any extra attributes from the config file
@@ -236,3 +240,18 @@ class VConnector(object):
 
         self.mors_cache['Datacenter']['objects'].update(mors)
         self.mors_cache['Datacenter']['last_updated'] = time()
+
+    def update_cluster_mors(self):
+        """
+        Updates the ClusterComputeResource MORs cache
+
+        """
+        if not self.mors_cache_needs_update(self.mors_cache['ClusterComputeResource']['last_updated']):
+            return
+
+        logging.info('Updating ClusterComputeResource MORs cache')
+        
+        mors = {v:k for k, v in self.viserver.get_clusters().items()}
+
+        self.mors_cache['ClusterComputeResource']['objects'].update(mors)
+        self.mors_cache['ClusterComputeResource']['last_updated'] = time()
