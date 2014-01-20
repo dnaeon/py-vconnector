@@ -91,7 +91,11 @@ class VConnector(object):
             'Datastore': {
                 'objects': {},
                 'last_updated': 0,
-                }
+                },
+            'VirtualMachine': {
+                'objects': {},
+                'last_updated': 0,
+                },
             }
         
         # load any extra attributes from the config file
@@ -170,7 +174,7 @@ class VConnector(object):
         """
         if not self.mors_cache_needs_update(self.mors_cache['HostSystem']['last_updated']):
             return
-
+        
         logging.info('Updating HostSystem MORs cache')
 
         mors = {v:k for k, v in self.viserver.get_hosts().items()}
@@ -195,4 +199,23 @@ class VConnector(object):
 
         self.mors_cache['Datastore']['objects'].update(mors)
         self.mors_cache['Datastore']['last_updated'] = time()
+
+    def update_vm_mors(self):
+        """
+        Updates the VirtualMachine MORs cache
+
+        """
+        if not self.mors_cache_needs_update(self.mors_cache['VirtualMachine']['last_updated']):
+            return
+        
+        logging.info('Updating VirtualMachine MORs cache')
+
+        result = self.viserver._retrieve_properties_traversal(property_names=['config.name'],
+                                                              obj_type=MORTypes.VirtualMachine)
+
+        mors = {p.Val:item.Obj for item in result for p in item.PropSet}
+
+        self.mors_cache['VirtualMachine']['objects'].update(mors)
+        self.mors_cache['VirtualMachine']['last_updated'] = time()
+
 
