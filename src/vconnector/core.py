@@ -96,6 +96,10 @@ class VConnector(object):
                 'objects': {},
                 'last_updated': 0,
                 },
+            'Datacenter': {
+                'objects': {},
+                'last_updated': 0,
+                },
             }
         
         # load any extra attributes from the config file
@@ -218,4 +222,17 @@ class VConnector(object):
         self.mors_cache['VirtualMachine']['objects'].update(mors)
         self.mors_cache['VirtualMachine']['last_updated'] = time()
 
+    def update_datacenter_mors(self):
+        """
+        Updates the Datacenter MORs cache
 
+        """
+        if not self.mors_cache_needs_update(self.mors_cache['Datacenter']['last_updated']):
+            return
+
+        logging.info('Updating Datacenter MORs cache')
+        
+        mors = {v:k for k, v in self.viserver.get_datacenters().items()}
+
+        self.mors_cache['Datacenter']['objects'].update(mors)
+        self.mors_cache['Datacenter']['last_updated'] = time()
