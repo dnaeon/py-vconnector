@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 
 setup(name='py-vconnector',
       version='0.1.0',
@@ -9,6 +9,6 @@ setup(name='py-vconnector',
       packages=['vconnector'],
       package_dir={'': 'src'},
       install_requires=[
-        'pysphere >= 0.1.8',
+        'pyvmomi >= 5.5.0',
       ]
 )
