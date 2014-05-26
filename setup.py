@@ -1,14 +1,19 @@
 from setuptools import setup
 
-setup(name='py-vconnector',
-      version='0.1.0',
-      description='Python VMware vSphere Connector',
+setup(name='vconnector',
+      version='0.2.0',
+      description='VMware vSphere Connector Module for Python',
       author='Marin Atanasov Nikolov',
       author_email='dnaeon@gmail.com',
       license='BSD',
       packages=['vconnector'],
       package_dir={'': 'src'},
+      scripts=[
+        'src/vconnector-cli',
+      ],
       install_requires=[
         'pyvmomi >= 5.5.0',
+        'docopt >= 0.6.1',
+        'tabulate >= 0.7.2',  
       ]
 )
