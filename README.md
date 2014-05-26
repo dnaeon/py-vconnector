@@ -91,6 +91,17 @@ How to get a `VMware vSphere View` of all `VirtualMachine` managed objects:
 	>>> client.connect()
 	>>> vms = client.get_vm_view()
 	>>> print vms.view
+	(ManagedObject) [
+		'vim.VirtualMachine:vm-36',
+		'vim.VirtualMachine:vm-129',
+		'vim.VirtualMachine:vm-162',
+		'vim.VirtualMachine:vm-146',
+		'vim.VirtualMachine:vm-67',
+		'vim.VirtualMachine:vm-147',
+		'vim.VirtualMachine:vm-134',
+		'vim.VirtualMachine:vm-88'
+	]
+	>>> client.disconnect()	
 
 How to get a Managed Object by a specific property, e.g. find the Managed Object of an ESXi host which name is `esx01.example.org`:
 
@@ -100,7 +111,7 @@ How to get a Managed Object by a specific property, e.g. find the Managed Object
 	>>> client.connect()
 	>>> host = client.get_object_by_property(property_name='name', property_value='esxi01.example.org', obj_type=pyVmomi.vim.HostSystem)
 	>>> print host.name
-	esxi01.example.org
+	'esxi01.example.org'
 	>>> client.disconnect()
 
 How to collect properties for Managed Objects, e.g. get the `name` and `capacity` properties for all `Datastore` managed objects:
@@ -110,7 +121,8 @@ How to collect properties for Managed Objects, e.g. get the `name` and `capacity
 	>>> client = VConnector(user='root', pwd='p4ssw0rd', host='vc01.example.org')
 	>>> client.connect()
 	>>> datastores = client.get_datastore_view()
-	>>> result = client.collect_properties(view_ref=datastores, obj_type=pyVmomi.vim.Datastore, path_set=['name', 'info.capacity'])
+	>>> result = client.collect_properties(view_ref=datastores, obj_type=pyVmomi.vim.Datastore, path_set=['name', 'summary.capacity'])
 	>>> print result
+	[{u'summary.capacity': 994821799936L, u'name': 'datastore1'}]
 	>>> client.disconnect()
 
