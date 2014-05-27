@@ -27,6 +27,7 @@ In order to install *vConnector* simply execute the command below:
 ## Applications using vConnector module
 
 * [vPoller - VMware vSphere Distributed Pollers written in Python](https://github.com/dnaeon/py-vpoller)
+* [vEvents - VMware vSphere Events from the command-line](https://github.com/dnaeon/py-vevents)
 
 ## Using the vConnector CLI tool
 
