@@ -70,7 +70,14 @@ class VConnector(object):
         self.user = user
         self.pwd  = pwd
         self.host = host
+        self._si  = None
 
+    @property
+    def si(self):
+        if not self._si:
+            self.connect()
+        return self._si
+    
     def connect(self):
         """
         Connect to the VMware vSphere host
@@ -82,7 +89,7 @@ class VConnector(object):
         logging.info('Connecting vSphere Agent to %s', self.host)
         
         try:
-            self.si = pyVim.connect.SmartConnect(
+            self._si = pyVim.connect.SmartConnect(
                 host=self.host,
                 user=self.user,
                 pwd=self.pwd
