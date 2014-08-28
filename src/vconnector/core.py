@@ -95,7 +95,10 @@ class VConnector(object):
                 pwd=self.pwd
             )
         except Exception as e:
-            raise VConnectorException, 'Cannot connect to %s: %s' % (self.host, e)
+            # TODO: Maybe retry connection after some time
+            # before we finally give up on this vSphere host
+            logging.error('Cannot connect to %s: %s', self.host, e)
+            raise
 
     def disconnect(self):
         """
