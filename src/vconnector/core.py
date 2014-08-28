@@ -239,11 +239,20 @@ class VConnector(object):
 
         logging.debug('[%s] Getting container view ref to %s managed objects', self.host, [t.__name__ for t in obj_type])
 
-        view_ref = self.si.content.viewManager.CreateContainerView(
-            container=container,
-            type=obj_type,
-            recursive=True
-        )
+        try:
+            view_ref = self.si.content.viewManager.CreateContainerView(
+                container=container,
+                type=obj_type,
+                recursive=True
+            )
+        except pyVmomi.vim.NotAuthenticated:
+            logging.warning('[%s] Lost connection to vSphere host, trying to reconnect', self.host)
+            self.connect()
+            view_ref = self.si.content.viewManager.CreateContainerView(
+                container=container,
+                type=obj_type,
+                recursive=True
+            )
 
         return view_ref
 
@@ -262,7 +271,12 @@ class VConnector(object):
         """
         logging.debug('[%s] Getting list view ref for %s objects', self.host, [o.name for o in obj])
 
-        view_ref = self.si.content.viewManager.CreateListView(obj=obj)
+        try:
+            view_ref = self.si.content.viewManager.CreateListView(obj=obj)
+        except pyVmomi.vim.NotAuthenticated:
+            logging.warning('[%s] Lost connection to vSphere host, trying to reconnect', self.host)
+            self.connect()
+            view_ref = self.si.content.viewManager.CreateListView(obj=obj)
 
         return view_ref
 
