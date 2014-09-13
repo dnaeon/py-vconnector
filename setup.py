@@ -6,6 +6,7 @@ setup(name='vconnector',
       author='Marin Atanasov Nikolov',
       author_email='dnaeon@gmail.com',
       license='BSD',
+      url='https://github.com/dnaeon/py-vconnector',
       packages=['vconnector'],
       package_dir={'': 'src'},
       scripts=[
