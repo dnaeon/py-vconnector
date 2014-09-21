@@ -1,2 +1,5 @@
 *~
 \#*
+build/
+dist/
+src/vconnector.egg-info/
