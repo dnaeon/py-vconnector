@@ -106,6 +106,10 @@ class VConnector(object):
 
         """
         logging.info('Disconnecting vSphere Agent from %s', self.host)
+
+        if not self._si:
+            return
+
         pyVim.connect.Disconnect(self.si)
 
     def reconnect(self):
