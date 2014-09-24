@@ -26,7 +26,8 @@
 VMware vSphere Connector Module for Python
 
 This module provides classes and methods for managing 
-connections to VMware vSphere hosts and retrieving of object properties
+connections to VMware vSphere hosts and retrieving of
+object properties.
 
 """
 
@@ -47,8 +48,9 @@ class VConnector(object):
     """
     VConnector class
 
-    The VConnector class defines methods for connecting, disconnecting and
-    retrieving of objects from a VMware vSphere host
+    The VConnector class defines methods for connecting,
+    disconnecting and retrieving of objects from a
+    VMware vSphere host.
 
     Returns:
         VConnector object
@@ -128,51 +130,68 @@ class VConnector(object):
 
     def get_datacenter_view(self):
         """
-        Get a view ref to all pyVmomi.vim.Datacenter managed objects
+        Get a view ref to all vim.Datacenter managed objects
 
         """
-        return self.get_container_view(obj_type=[pyVmomi.vim.Datacenter])
+        return self.get_container_view(
+            obj_type=[pyVmomi.vim.Datacenter]
+        )
 
     def get_cluster_view(self):
         """
-        Get a view ref to all pyVmomi.vim.ClusterComputeResource managed objects
+        Get a view ref to all vim.ClusterComputeResource managed objects
 
         """
-        return self.get_container_view(obj_type=[pyVmomi.vim.ClusterComputeResource])
+        return self.get_container_view(
+            obj_type=[pyVmomi.vim.ClusterComputeResource]
+        )
 
     def get_host_view(self):
         """
-        Get a view ref to all pyVmomi.vim.HostSystem managed objects
+        Get a view ref to all vim.HostSystem managed objects
 
         """
-        return self.get_container_view(obj_type=[pyVmomi.vim.HostSystem])
+        return self.get_container_view(
+            obj_type=[pyVmomi.vim.HostSystem]
+        )
 
     def get_vm_view(self):
         """
-        Get a view ref to all pyVmomi.vim.VirtualMachine managed objects
+        Get a view ref to all vim.VirtualMachine managed objects
 
         """
-        return self.get_container_view(obj_type=[pyVmomi.vim.VirtualMachine])
+        return self.get_container_view(
+            obj_type=[pyVmomi.vim.VirtualMachine]
+        )
 
     def get_datastore_view(self):
         """
-        Get a view ref to all pyVmomi.vim.Datastore managed objects
+        Get a view ref to all vim.Datastore managed objects
 
         """
-        return self.get_container_view(obj_type=[pyVmomi.vim.Datastore])
+        return self.get_container_view(
+            obj_type=[pyVmomi.vim.Datastore]
+        )
 
     def get_resource_pool_view(self):
         """
-        Get a view ref to all pyVmomi.vim.ResourcePool managed objects
+        Get a view ref to all vim.ResourcePool managed objects
 
         """
-        return self.get_container_view(obj_type=[pyVmomi.vim.ResourcePool])
+        return self.get_container_view(
+            obj_type=[pyVmomi.vim.ResourcePool]
+        )
 
-    def collect_properties(self, view_ref, obj_type, path_set=[], include_mors=False):
+    def collect_properties(self,
+                           view_ref,
+                           obj_type,
+                           path_set=[],
+                           include_mors=False):
         """
         Collect properties for managed objects from a view ref
 
-        Check the vSphere API documentation for example on retrieving object properties:
+        Check the vSphere API documentation for example on
+        retrieving object properties:
     
             - http://pubs.vmware.com/vsphere-50/index.jsp#com.vmware.wssdk.pg.doc_50/PG_Ch5_PropertyCollector.7.2.html
 
@@ -186,16 +205,22 @@ class VConnector(object):
             A list of properties for the managed objects
 
         """
-        logging.debug('[%s] Collecting properties for %s managed objects', self.host, obj_type.__name__)
+        logging.debug(
+            '[%s] Collecting properties for %s managed objects',
+            self.host,
+            obj_type.__name__
+        )
 
         collector = self.si.content.propertyCollector
         
-        # Create object specification to define the starting point of inventory navigation
+        # Create object specification to define the starting point of
+        # inventory navigation
         obj_spec = pyVmomi.vmodl.query.PropertyCollector.ObjectSpec()
         obj_spec.obj = view_ref
         obj_spec.skip = True
 
-        # Create a traversal specification to identify the path for collection
+        # Create a traversal specification to identify the
+        # path for collection
         traversal_spec = pyVmomi.vmodl.query.PropertyCollector.TraversalSpec()
         traversal_spec.name = 'traverseEntities'
         traversal_spec.path = 'view'
@@ -208,12 +233,16 @@ class VConnector(object):
         property_spec.type = obj_type
                 
         if not path_set:
-            logging.warning('[%s] Retrieving all properties for objects, this might take a while...'. self.host)
+            logging.warning(
+                '[%s] Retrieving all properties for objects, this might take a while...',
+                self.host
+            )
             property_spec.all = True
             
         property_spec.pathSet = path_set
 
-        # Add the object and property specification to the property filter specification
+        # Add the object and property specification to the
+        # property filter specification
         filter_spec = pyVmomi.vmodl.query.PropertyCollector.FilterSpec()
         filter_spec.objectSet = [obj_spec]
         filter_spec.propSet = [property_spec]
@@ -236,9 +265,11 @@ class VConnector(object):
 
     def get_container_view(self, obj_type, container=None):
         """
-        Get a vSphere Container View reference to all objects of type 'obj_type'
+        Get a vSphere Container View reference to all
+        objects of type 'obj_type'
 
-        It is up to the caller to take care of destroying the View when no longer needed.
+        It is up to the caller to take care of destroying the View
+        when no longer needed.
 
         Args:
             obj_type (list): A list of managed object types
@@ -250,7 +281,11 @@ class VConnector(object):
         if not container:
             container = self.si.content.rootFolder
 
-        logging.debug('[%s] Getting container view ref to %s managed objects', self.host, [t.__name__ for t in obj_type])
+        logging.debug(
+            '[%s] Getting container view ref to %s managed objects',
+            self.host,
+            [t.__name__ for t in obj_type]
+        )
 
         view_ref = self.si.content.viewManager.CreateContainerView(
             container=container,
@@ -264,16 +299,21 @@ class VConnector(object):
         """
         Get a vSphere List View reference 
 
-        It is up to the caller to take care of destroying the View when no longer needed.
+        It is up to the caller to take care of destroying the View
+        when no longer needed.
 
         Args:
-            obj (list): A list of managed object to include in the List View
+            obj (list): A list of managed object to include in the View
 
         Returns:
             A list view ref to the managed objects
         
         """
-        logging.debug('[%s] Getting list view ref for %s objects', self.host, [o.name for o in obj])
+        logging.debug(
+            '[%s] Getting list view ref for %s objects',
+            self.host,
+            [o.name for o in obj]
+        )
 
         view_ref = self.si.content.viewManager.CreateListView(obj=obj)
 
@@ -369,10 +409,16 @@ class VConnectorDatabase(object):
             enabled (int): If True mark this vSphere Agent as enabled
 
         """
-        logging.info('Adding/updating vSphere Agent %s in database', host)
+        logging.info(
+            'Adding/updating vSphere Agent %s in database',
+            host
+        )
 
         self.cursor = self.conn.cursor()
-        self.cursor.execute('INSERT OR REPLACE INTO hosts VALUES (?,?,?,?)', (host, user, pwd, enabled))
+        self.cursor.execute(
+            'INSERT OR REPLACE INTO hosts VALUES (?,?,?,?)',
+            (host, user, pwd, enabled)
+        )
         self.conn.commit()
         self.cursor.close()
 
@@ -387,7 +433,10 @@ class VConnectorDatabase(object):
         logging.info('Removing vSphere Agent %s from database', host)
 
         self.cursor = self.conn.cursor()
-        self.cursor.execute('DELETE FROM hosts WHERE host = ?', (host,))
+        self.cursor.execute(
+            'DELETE FROM hosts WHERE host = ?',
+            (host,)
+        )
         self.conn.commit()
         self.cursor.close()
 
@@ -426,7 +475,10 @@ class VConnectorDatabase(object):
         logging.info('Enabling vSphere Agent %s', host)
 
         self.cursor = self.conn.cursor()
-        self.cursor.execute('UPDATE hosts SET enabled = 1 WHERE host = ?', (host,))
+        self.cursor.execute(
+            'UPDATE hosts SET enabled = 1 WHERE host = ?',
+            (host,)
+        )
         self.conn.commit()
         self.cursor.close()
         
@@ -441,6 +493,9 @@ class VConnectorDatabase(object):
         logging.info('Disabling vSphere Agent %s', host)
 
         self.cursor = self.conn.cursor()
-        self.cursor.execute('UPDATE hosts SET enabled = 0 WHERE host = ?', (host,))
+        self.cursor.execute(
+            'UPDATE hosts SET enabled = 0 WHERE host = ?',
+            (host,)
+        )
         self.conn.commit()
         self.cursor.close()
