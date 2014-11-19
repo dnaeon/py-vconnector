@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='vconnector',
-      version='0.3.0',
+      version='0.3.1',
       description='VMware vSphere Connector Module for Python',
       long_description=open('README.rst').read(),
       author='Marin Atanasov Nikolov',
