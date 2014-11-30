@@ -1,6 +1,14 @@
 vConnector - VMware vSphere Connector Module for Python
 =======================================================
 
+.. image:: https://pypip.in/version/vconnector/badge.svg
+    :target: https://pypi.python.org/pypi/vconnector/
+    :alt: Latest Version
+
+.. image:: https://pypip.in/download/vconnector/badge.svg
+    :target: https://pypi.python.org/pypi/vconnector/
+    :alt: Downloads
+
 vConnector is a wrapper module around
 `pyVmomi VMware vSphere bindings <https://github.com/vmware/pyvmomi>`_,
 which provides methods for connecting and retrieving of
