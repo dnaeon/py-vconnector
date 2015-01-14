@@ -1,2 +1,1 @@
-__all__ = ['core']
-__name__ = 'vconnector'
+__version__ = '0.3.1'
