@@ -24,7 +24,7 @@ through a common interface.
 Requirements
 ============
 
-* `Python 2.7.x <https://www.python.org/>`_
+* `Python 2.7.x, 3.2.x or later <https://www.python.org/>`_
 * `docopt <https://github.com/docopt/docopt>`_
 * `pyVmomi <https://github.com/vmware/pyvmomi>`_
 * `tabulate <https://pypi.python.org/pypi/tabulate>`_
@@ -153,6 +153,7 @@ managed objects:
 
 .. code-block:: python
 
+   >>> from __future__ import print_function
    >>> from vconnector.core import VConnector
    >>> client = VConnector(
    ...     user='root',
@@ -161,7 +162,7 @@ managed objects:
    ...)
    >>> client.connect()
    >>> vms = client.get_vm_view()
-   >>> print vms.view
+   >>> print(vms.view)
    (ManagedObject) [
 	'vim.VirtualMachine:vm-36',
 	'vim.VirtualMachine:vm-129',
@@ -179,6 +180,7 @@ Managed Object of an ESXi host which name is ``esxi01.example.org``:
 
 .. code-block:: python
 
+   >>> from __future__ import print_function
    >>> import pyVmomi
    >>> from vconnector.core import VConnector
    >>> client = VConnector(
@@ -192,7 +194,7 @@ Managed Object of an ESXi host which name is ``esxi01.example.org``:
    ...     property_value='esxi01.example.org',
    ...     obj_type=pyVmomi.vim.HostSystem
    ... )
-   >>> print host.name
+   >>> print(host.name)
    'esxi01.example.org'
    >>> client.disconnect()
 
@@ -202,6 +204,7 @@ managed objects:
 
 .. code-block:: python
 
+   >>> from __future__ import print_function
    >>> import pyVmomi
    >>> from vconnector.core import VConnector
    >>> client = VConnector(
@@ -216,7 +219,7 @@ managed objects:
    ...     obj_type=pyVmomi.vim.Datastore,
    ...     path_set=['name', 'summary.capacity']
    ...)
-   >>> print result
+   >>> print(result)
    [{u'summary.capacity': 994821799936L, u'name': 'datastore1'}]
    >>> client.disconnect()
 
