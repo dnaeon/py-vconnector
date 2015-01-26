@@ -30,6 +30,8 @@ connection details using an SQLite database backend.
 
 """
 
+from __future__ import print_function
+
 import logging
 
 from docopt import docopt
@@ -89,11 +91,11 @@ def get_agents(db):
     db = VConnectorDatabase(db)
     agents = db.get_agents()
 
-    print tabulate(
+    print(tabulate(
         agents,
         headers=['Hostname', 'Username', 'Password', 'Enabled'],
         tablefmt='grid'
-    )
+    ))
 
 def enable_agent(db, host):
     """

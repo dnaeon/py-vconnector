@@ -392,7 +392,7 @@ class VConnectorDatabase(object):
         try:
             self.cursor.execute(sql)
         except sqlite3.OperationalError as e:
-            raise VConnectorException, 'Cannot initialize database: %s' % e
+            raise VConnectorException('Cannot initialize database: {}'.format(e.message))
 
         self.conn.commit()
         self.cursor.close()
