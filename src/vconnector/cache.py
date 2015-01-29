@@ -39,7 +39,7 @@ __all__ = ['CachedObject', 'CacheInventory']
 
 
 class CachedObject(object):
-    def __init__(self, name, obj, ttl=300):
+    def __init__(self, name, obj, ttl):
         """
         Initializes a new cached object
 
