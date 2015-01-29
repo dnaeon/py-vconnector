@@ -104,7 +104,7 @@ class CacheInventory(object):
 
         """
         if time() > item.timestamp + item.ttl:
-            logging.info(
+            logging.debug(
                 'Object %s has expired and will be removed from cache',
                 item.name
             )
@@ -128,9 +128,9 @@ class CacheInventory(object):
 
         if self.maxsize > 0 and len(self._cache) == self.maxsize:
             popped = self._cache.popitem(last=False)
-            logging.info('Cache maxsize reached, removing %s', popped.name)
+            logging.debug('Cache maxsize reached, removing %s', popped.name)
 
-        logging.info('Caching object %s [ttl: %d seconds]', obj.name, obj.ttl)
+        logging.debug('Caching object %s [ttl: %d seconds]', obj.name, obj.ttl)
         self._cache[obj.name] = obj
 
     def get(self, key):
