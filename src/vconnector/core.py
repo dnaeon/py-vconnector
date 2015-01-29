@@ -37,12 +37,12 @@ import sqlite3
 import pyVmomi
 import pyVim.connect
 
-class VConnectorException(Exception):
-    """
-    Generic VConnector exception
+from vconnector.cache import CachedObject
+from vconnector.cache import CacheInventory
+from vconnector.exceptions import VConnectorException
 
-    """
-    pass
+__all__ = ['VConnector', 'VConnectorDatabase']
+
 
 class VConnector(object):
     """
@@ -59,20 +59,27 @@ class VConnector(object):
         VConnectorException
 
     """
-    def __init__(self, user, pwd, host):
+    def __init__(self, user, pwd, host, cache_enabled=False, cache_ttl=300):
         """
         Initializes a new VConnector object
 
         Args:
-            user (str): Username to use when connecting
-            pwd  (str): Password to use when connecting 
-            host (str): VMware vSphere host to connect to
+            user           (str): Username to use when connecting
+            pwd            (str): Password to use when connecting
+            host           (str): VMware vSphere host to connect to
+            cache_enabled (bool): If True use an expiring cache for the
+                                  managed objects
+            cache_ttl      (int): Time in seconds after which a
+                                  cached object is considered as expired
 
         """
         self.user = user
         self.pwd  = pwd
         self.host = host
         self._si  = None
+        self.cache = CacheInventory()
+        self.cache_enabled = cache_enabled
+        self.cache_ttl = cache_ttl
 
     @property
     def si(self):
@@ -321,7 +328,10 @@ class VConnector(object):
     def get_object_by_property(self, property_name, property_value, obj_type):
         """
         Find a Managed Object by a propery
-    
+
+        If cache is enabled then we search for the managed object from the
+        cache first and if present we return the object from cache.
+
         Args:
             property_name            (str): Name of the property to look for
             property_value           (str): Value of the property to match 
@@ -331,20 +341,39 @@ class VConnector(object):
             The first matching object
     
         """
-        view_ref = self.get_container_view(obj_type=[obj_type])
+        if not issubclass(obj_type, pyVmomi.vim.ManagedEntity):
+            raise VConnectorException('Type should be a subclass of vim.ManagedEntity')
 
+        if self.cache_enabled:
+            cached_obj_name = '{}:{}'.format(obj_type.__name__, property_value)
+            if cached_obj_name in self.cache:
+                logging.debug('Using cached object %s', cached_obj_name)
+                return self.cache.get(cached_obj_name)
+
+        view_ref = self.get_container_view(obj_type=[obj_type])
         props = self.collect_properties(
             view_ref=view_ref,
             obj_type=obj_type,
             path_set=[property_name],
             include_mors=True
         )
-
         view_ref.DestroyView()
 
+        obj = None
         for each_obj in props:
             if each_obj[property_name] == property_value:
-                return each_obj['obj']
+                obj = each_obj['obj']
+                break
+
+        if self.cache_enabled:
+            cached_obj = CachedObject(
+                name=cached_obj_name,
+                obj=obj,
+                ttl=self.cache_ttl
+            )
+            self.cache.add(obj=cached_obj)
+
+        return obj
 
 class VConnectorDatabase(object):
     """
