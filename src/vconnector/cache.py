@@ -52,9 +52,6 @@ class CachedObject(object):
             CacheException
 
         """
-        if not isinstance(obj, vim.ManagedEntity):
-            raise CacheException('Need a vim.ManagedEntity instance to cache')
-
         self.name = name
         self.obj = obj
         self.ttl = ttl
