@@ -33,7 +33,6 @@ import threading
 from time import time
 from collections import OrderedDict
 
-from pyVmomi import vim
 from vconnector.exceptions import CacheException
 
 __all__ = ['CachedObject', 'CacheInventory']
@@ -46,7 +45,7 @@ class CachedObject(object):
 
         Args:
             name               (str): Human readable name for the cached entry
-            obj  (vim.ManagedEntity): A managed object to store in the cache
+            obj               (type): Object to be cached
             ttl                (int): The TTL in seconds for the cached object
 
         Raises:
@@ -137,7 +136,7 @@ class CacheInventory(object):
 
         """
         if not isinstance(obj, CachedObject):
-            raise Exception('Need a CachedObject instance to put in the cache')
+            raise Exception('Need a CachedObject instance to add in the cache')
 
         with self.lock:
             if self.maxsize > 0 and len(self._cache) == self.maxsize:
