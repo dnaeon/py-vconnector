@@ -53,6 +53,7 @@ class CachedObject(object):
             CacheException
 
         """
+        self.hits = 0
         self.name = name
         self.obj = obj
         self.ttl = ttl
@@ -63,21 +64,30 @@ class CacheInventory(object):
     Inventory for cached objects
 
     """
-    def __init__(self, maxsize=0):
+    def __init__(self, maxsize=0, housekeeping=0):
         """
         Initializes a new cache inventory
 
         Args:
-            maxsize (int): Upperbound limit on the number of items that
-                           will be stored in the cache inventory
+            maxsize      (int): Upperbound limit on the number of items
+                                that will be stored in the cache inventory
+            housekeeping (int): Time in minutes to perform periodic
+                                cache housekeeping
 
         """
         if maxsize < 0:
             raise CacheException('Cache inventory size cannot be negative')
 
+        if housekeeping < 0:
+            raise CacheException('Cache housekeeping period cannot be negative')
+
         self._cache = OrderedDict()
         self.maxsize = maxsize
+        self.housekeeping = housekeeping * 60.0
         self.lock = threading.RLock()
+
+        if self.housekeeping > 0:
+            threading.Timer(self.housekeeping, self.housekeeper).start()
 
     def __len__(self):
         with self.lock:
@@ -107,8 +117,9 @@ class CacheInventory(object):
         with self.lock:
             if time() > item.timestamp + item.ttl:
                 logging.debug(
-                    'Object %s has expired and will be removed from cache',
-                    item.name
+                    'Object %s has expired and will be removed from cache [hits %d]',
+                    item.name,
+                    item.hits
                 )
                 self._cache.pop(item.name)
                 return True
@@ -131,7 +142,7 @@ class CacheInventory(object):
         with self.lock:
             if self.maxsize > 0 and len(self._cache) == self.maxsize:
                 popped = self._cache.popitem(last=False)
-                logging.debug('Cache maxsize reached, removing %s', popped.name)
+                logging.debug('Cache maxsize reached, removing %s [hits %d]', popped.name, popped.hits)
 
             logging.debug('Caching object %s [ttl: %d seconds]', obj.name, obj.ttl)
             self._cache[obj.name] = obj
@@ -147,11 +158,40 @@ class CacheInventory(object):
             The cached object if found, None otherwise
 
         """
-        with self:lock:
+        with self.lock:
             if key not in self._cache:
                 return None
 
             item = self._cache[key]
             if self._has_expired(item):
                 return None
+
+            item.hits += 1
+            logging.debug(
+                'Returning object %s from cache [hits %d]',
+                item.name,
+                item.hits
+            )
+
             return item.obj
+
+    def housekeeper(self):
+        """
+        Remove expired entries from the cache on regular basis
+
+        """
+        with self.lock:
+            expired = 0
+            logging.info(
+                'Starting cache housekeeper [%d items in cache]',
+                len(self._cache)
+            )
+            for name, item in self._cache.items():
+                if self._has_expired(item):
+                    expired += 1
+            logging.info(
+                'Cache housekeeper completed [%d removed from cache]',
+                expired
+            )
+            if self.housekeeping > 0:
+                threading.Timer(self.housekeeping, self.housekeeper).start()
