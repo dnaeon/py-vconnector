@@ -28,6 +28,7 @@ The vConnector caching module
 """
 
 import logging
+import threading
 
 from time import time
 from collections import OrderedDict
@@ -76,18 +77,21 @@ class CacheInventory(object):
 
         self._cache = OrderedDict()
         self.maxsize = maxsize
+        self.lock = threading.RLock()
 
     def __len__(self):
-        return len(self._cache)
+        with self.lock:
+            return len(self._cache)
 
     def __contains__(self, key):
-        if key not in self._cache:
-            return False
+        with self.lock:
+            if key not in self._cache:
+                return False
 
-        item = self._cache[key]
-        if self._has_expired(item):
-            return False
-        return True
+            item = self._cache[key]
+            if self._has_expired(item):
+                return False
+            return True
 
     def _has_expired(self, item):
         """
@@ -100,14 +104,15 @@ class CacheInventory(object):
             item (CachedObject): A cached object to lookup
 
         """
-        if time() > item.timestamp + item.ttl:
-            logging.debug(
-                'Object %s has expired and will be removed from cache',
-                item.name
-            )
-            self._cache.pop(item.name)
-            return True
-        return False
+        with self.lock:
+            if time() > item.timestamp + item.ttl:
+                logging.debug(
+                    'Object %s has expired and will be removed from cache',
+                    item.name
+                )
+                self._cache.pop(item.name)
+                return True
+            return False
 
     def add(self, obj):
         """
@@ -123,12 +128,13 @@ class CacheInventory(object):
         if not isinstance(obj, CachedObject):
             raise Exception('Need a CachedObject instance to put in the cache')
 
-        if self.maxsize > 0 and len(self._cache) == self.maxsize:
-            popped = self._cache.popitem(last=False)
-            logging.debug('Cache maxsize reached, removing %s', popped.name)
+        with self.lock:
+            if self.maxsize > 0 and len(self._cache) == self.maxsize:
+                popped = self._cache.popitem(last=False)
+                logging.debug('Cache maxsize reached, removing %s', popped.name)
 
-        logging.debug('Caching object %s [ttl: %d seconds]', obj.name, obj.ttl)
-        self._cache[obj.name] = obj
+            logging.debug('Caching object %s [ttl: %d seconds]', obj.name, obj.ttl)
+            self._cache[obj.name] = obj
 
     def get(self, key):
         """
@@ -141,11 +147,11 @@ class CacheInventory(object):
             The cached object if found, None otherwise
 
         """
-        if key not in self._cache:
-            return None
+        with self:lock:
+            if key not in self._cache:
+                return None
 
-        item = self._cache[key]
-        if self._has_expired(item):
-            return None
-        return item.obj
-
+            item = self._cache[key]
+            if self._has_expired(item):
+                return None
+            return item.obj
