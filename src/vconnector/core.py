@@ -59,27 +59,44 @@ class VConnector(object):
         VConnectorException
 
     """
-    def __init__(self, user, pwd, host, cache_enabled=False, cache_ttl=300):
+    def __init__(self,
+                 user,
+                 pwd,
+                 host,
+                 cache_maxsize=0,
+                 cache_enabled=False,
+                 cache_ttl=300,
+                 cache_housekeeping=60
+    ):
         """
         Initializes a new VConnector object
 
         Args:
-            user           (str): Username to use when connecting
-            pwd            (str): Password to use when connecting
-            host           (str): VMware vSphere host to connect to
-            cache_enabled (bool): If True use an expiring cache for the
-                                  managed objects
-            cache_ttl      (int): Time in seconds after which a
-                                  cached object is considered as expired
+            user               (str): Username to use when connecting
+            pwd                (str): Password to use when connecting
+            host               (str): VMware vSphere host to connect to
+            cache_maxsize      (int): Upperbound limit on the number of
+                                      items that will be stored in the cache
+            cache_enabled     (bool): If True use an expiring cache for the
+                                      managed objects
+            cache_ttl          (int): Time in seconds after which a
+                                      cached object is considered as expired
+            cache_housekeeping (int): Time in minutes to perform periodic
+                                      cache housekeeping
 
         """
         self.user = user
         self.pwd  = pwd
         self.host = host
         self._si  = None
-        self.cache = CacheInventory()
+        self.cache_maxsize = cache_maxsize
         self.cache_enabled = cache_enabled
         self.cache_ttl = cache_ttl
+        self.cache_housekeeping = cache_housekeeping
+        self.cache = CacheInventory(
+            maxsize=self.cache_maxsize,
+            housekeeping=self.cache_housekeeping
+        )
 
     @property
     def si(self):
