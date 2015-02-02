@@ -84,9 +84,7 @@ class CacheInventory(object):
         self.maxsize = maxsize
         self.housekeeping = housekeeping * 60.0
         self.lock = threading.RLock()
-
-        if self.housekeeping > 0:
-            threading.Timer(self.housekeeping, self.housekeeper).start()
+        self._schedule_housekeeper()
 
     def __len__(self):
         with self.lock:
@@ -121,6 +119,19 @@ class CacheInventory(object):
                 self._cache.pop(item.name)
                 return True
             return False
+
+    def _schedule_housekeeper(self):
+        """
+        Schedules the next run of the housekeeper
+
+        """
+        if self.housekeeping > 0:
+            t = threading.Timer(
+                interval=self.housekeeping,
+                function=self.housekeeper
+            )
+            t.setDaemon(True)
+            t.start()
 
     def add(self, obj):
         """
@@ -190,5 +201,4 @@ class CacheInventory(object):
                 'Cache housekeeper completed [%d removed from cache]',
                 expired
             )
-            if self.housekeeping > 0:
-                threading.Timer(self.housekeeping, self.housekeeper).start()
+            self._schedule_housekeeper()
