@@ -128,10 +128,30 @@ class CacheInventory(object):
         if self.housekeeping > 0:
             t = threading.Timer(
                 interval=self.housekeeping,
-                function=self.housekeeper
+                function=self._housekeeper
             )
             t.setDaemon(True)
             t.start()
+
+    def _housekeeper(self):
+        """
+        Remove expired entries from the cache on regular basis
+
+        """
+        with self.lock:
+            expired = 0
+            logging.info(
+                'Starting cache housekeeper [%d items in cache]',
+                len(self._cache)
+            )
+            for item in self._cache.values():
+                if self._has_expired(item):
+                    expired += 1
+            logging.info(
+                'Cache housekeeper completed [%d removed from cache]',
+                expired
+            )
+            self._schedule_housekeeper()
 
     def add(self, obj):
         """
@@ -191,22 +211,3 @@ class CacheInventory(object):
         with self.lock:
             self._cache.clear()
 
-    def housekeeper(self):
-        """
-        Remove expired entries from the cache on regular basis
-
-        """
-        with self.lock:
-            expired = 0
-            logging.info(
-                'Starting cache housekeeper [%d items in cache]',
-                len(self._cache)
-            )
-            for item in self._cache.values():
-                if self._has_expired(item):
-                    expired += 1
-            logging.info(
-                'Cache housekeeper completed [%d removed from cache]',
-                expired
-            )
-            self._schedule_housekeeper()
