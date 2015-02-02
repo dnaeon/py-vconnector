@@ -98,9 +98,7 @@ class CacheInventory(object):
                 return False
 
             item = self._cache[key]
-            if self._has_expired(item):
-                return False
-            return True
+            return not self._has_expired(item)
 
     def _has_expired(self, item):
         """
@@ -139,7 +137,7 @@ class CacheInventory(object):
             raise Exception('Need a CachedObject instance to add in the cache')
 
         with self.lock:
-            if self.maxsize > 0 and len(self._cache) == self.maxsize:
+            if 0 < self.maxsize == len(self._cache):
                 popped = self._cache.popitem(last=False)
                 logging.debug('Cache maxsize reached, removing %s [hits %d]', popped.name, popped.hits)
 
@@ -185,7 +183,7 @@ class CacheInventory(object):
                 'Starting cache housekeeper [%d items in cache]',
                 len(self._cache)
             )
-            for name, item in self._cache.items():
+            for item in self._cache.values():
                 if self._has_expired(item):
                     expired += 1
             logging.info(
