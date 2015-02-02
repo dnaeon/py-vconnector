@@ -183,6 +183,14 @@ class CacheInventory(object):
 
             return item.obj
 
+    def clear(self):
+        """
+        Remove all items from the cache
+
+        """
+        with self.lock:
+            self._cache.clear()
+
     def housekeeper(self):
         """
         Remove expired entries from the cache on regular basis
