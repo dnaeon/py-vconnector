@@ -31,11 +31,13 @@ import logging
 import threading
 
 from time import time
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 
 from vconnector.exceptions import CacheException
 
 __all__ = ['CachedObject', 'CacheInventory']
+
+_CachedObjectInfo = namedtuple('CachedObjectInfo', ['name', 'hits', 'ttl', 'timestamp'])
 
 
 class CachedObject(object):
@@ -47,9 +49,6 @@ class CachedObject(object):
             name               (str): Human readable name for the cached entry
             obj               (type): Object to be cached
             ttl                (int): The TTL in seconds for the cached object
-
-        Raises:
-            CacheException
 
         """
         self.hits = 0
@@ -72,6 +71,9 @@ class CacheInventory(object):
                                 that will be stored in the cache inventory
             housekeeping (int): Time in minutes to perform periodic
                                 cache housekeeping
+
+        Raises:
+            CacheException
 
         """
         if maxsize < 0:
@@ -102,19 +104,18 @@ class CacheInventory(object):
         """
         Checks if a cached item has expired and removes it if needed
 
-        If the upperbound limit has been reached then the last item
-        is being removed from the inventory.
-
         Args:
             item (CachedObject): A cached object to lookup
+
+        Returns:
+            bool: True if the item has expired, False otherwise
 
         """
         with self.lock:
             if time() > item.timestamp + item.ttl:
                 logging.debug(
-                    'Object %s has expired and will be removed from cache [hits %d]',
-                    item.name,
-                    item.hits
+                    'Object %s has expired and will be removed from cache',
+                    self.info(item.name)
                 )
                 self._cache.pop(item.name)
                 return True
@@ -141,14 +142,14 @@ class CacheInventory(object):
         with self.lock:
             expired = 0
             logging.info(
-                'Starting cache housekeeper [%d items in cache]',
+                'Starting cache housekeeper [%d item(s) in cache]',
                 len(self._cache)
             )
             for item in self._cache.values():
                 if self._has_expired(item):
                     expired += 1
             logging.info(
-                'Cache housekeeper completed [%d removed from cache]',
+                'Cache housekeeper completed [%d item(s) removed from cache]',
                 expired
             )
             self._schedule_housekeeper()
@@ -156,6 +157,9 @@ class CacheInventory(object):
     def add(self, obj):
         """
         Add an item to the cache inventory
+
+        If the upperbound limit has been reached then the last item
+        is being removed from the inventory.
 
         Args:
             obj (CachedObject): A CachedObject instance to be added
@@ -165,40 +169,42 @@ class CacheInventory(object):
 
         """
         if not isinstance(obj, CachedObject):
-            raise Exception('Need a CachedObject instance to add in the cache')
+            raise CacheException('Need a CachedObject instance to add in the cache')
 
         with self.lock:
             if 0 < self.maxsize == len(self._cache):
                 popped = self._cache.popitem(last=False)
-                logging.debug('Cache maxsize reached, removing %s [hits %d]', popped.name, popped.hits)
+                logging.debug(
+                    'Cache maxsize reached, removing %s',
+                    self.info(name=popped.name)
+                )
 
-            logging.debug('Caching object %s [ttl: %d seconds]', obj.name, obj.ttl)
             self._cache[obj.name] = obj
+            logging.debug('Adding object to cache %s', self.info(name=obj.name))
 
-    def get(self, key):
+    def get(self, name):
         """
         Retrieve an object from the cache inventory
 
         Args:
-            key (str): Name of the cache item to retrieve
+            name (str): Name of the cache item to retrieve
 
         Returns:
             The cached object if found, None otherwise
 
         """
         with self.lock:
-            if key not in self._cache:
+            if name not in self._cache:
                 return None
 
-            item = self._cache[key]
+            item = self._cache[name]
             if self._has_expired(item):
                 return None
 
             item.hits += 1
             logging.debug(
-                'Returning object %s from cache [hits %d]',
-                item.name,
-                item.hits
+                'Returning object from cache %s',
+                self.info(name=item.name)
             )
 
             return item.obj
@@ -211,3 +217,17 @@ class CacheInventory(object):
         with self.lock:
             self._cache.clear()
 
+    def info(self, name):
+        """
+        Get statistics about a cached object
+
+        Args:
+            name (str): Name of the cached object
+
+        """
+        with self.lock:
+            if name not in self._cache:
+                return None
+
+            item = self._cache[name]
+            return _CachedObjectInfo(item.name, item.hits, item.ttl, item.timestamp)
