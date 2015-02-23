@@ -228,14 +228,14 @@ class VConnector(object):
             A list of properties for the managed objects
 
         """
+        collector = self.si.content.propertyCollector
+
         logging.debug(
             '[%s] Collecting properties for %s managed objects',
             self.host,
             obj_type.__name__
         )
 
-        collector = self.si.content.propertyCollector
-        
         # Create object specification to define the starting point of
         # inventory navigation
         obj_spec = pyVmomi.vmodl.query.PropertyCollector.ObjectSpec()
@@ -332,13 +332,13 @@ class VConnector(object):
             A list view ref to the managed objects
         
         """
+        view_ref = self.si.content.viewManager.CreateListView(obj=obj)
+
         logging.debug(
             '[%s] Getting list view ref for %s objects',
             self.host,
             [o.name for o in obj]
         )
-
-        view_ref = self.si.content.viewManager.CreateListView(obj=obj)
 
         return view_ref
 
