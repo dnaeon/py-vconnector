@@ -295,11 +295,12 @@ class VConnector(object):
         when no longer needed.
 
         Args:
-            obj_type (list): A list of managed object types
+            obj_type               (list): A list of managed object types
+            container (vim.ManagedEntity): Starting point of inventory search
 
         Returns:
             A container view ref to the discovered managed objects
-        
+
         """
         if not container:
             container = self.si.content.rootFolder
