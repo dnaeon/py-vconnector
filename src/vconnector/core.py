@@ -89,6 +89,7 @@ class VConnector(object):
         self.pwd  = pwd
         self.host = host
         self._si  = None
+        self._perf_counter = None
         self.cache_maxsize = cache_maxsize
         self.cache_enabled = cache_enabled
         self.cache_ttl = cache_ttl
@@ -109,7 +110,13 @@ class VConnector(object):
             )
             self.connect()
         return self._si
-    
+
+    @property
+    def perf_counter(self):
+        if not self._perf_counter:
+            self._perf_counter = self.si.content.perfManager.perfCounter
+        return self._perf_counter
+
     def connect(self):
         """
         Connect to the VMware vSphere host
