@@ -90,6 +90,7 @@ class VConnector(object):
         self.host = host
         self._si  = None
         self._perf_counter = None
+        self._perf_interval = None
         self.cache_maxsize = cache_maxsize
         self.cache_enabled = cache_enabled
         self.cache_ttl = cache_ttl
@@ -116,6 +117,12 @@ class VConnector(object):
         if not self._perf_counter:
             self._perf_counter = self.si.content.perfManager.perfCounter
         return self._perf_counter
+
+    @property
+    def perf_interval(self):
+        if not self._perf_interval:
+            self._perf_interval = self.si.content.perfManager.historicalInterval
+        return self._perf_interval
 
     def connect(self):
         """
