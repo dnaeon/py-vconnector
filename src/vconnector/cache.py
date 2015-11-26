@@ -145,9 +145,12 @@ class CacheInventory(object):
                 'Starting cache housekeeper [%d item(s) in cache]',
                 len(self._cache)
             )
-            for item in self._cache.values():
+
+            items = list(self._cache.values())
+            for item in items:
                 if self._has_expired(item):
                     expired += 1
+
             logging.info(
                 'Cache housekeeper completed [%d item(s) removed from cache]',
                 expired
