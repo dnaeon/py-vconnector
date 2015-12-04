@@ -94,6 +94,7 @@ class VConnector(object):
 
         if not ssl_context:
             default_context = ssl.create_default_context()
+            default_context.check_hostname = False
             default_context.verify_mode = ssl.CERT_NONE
             self.ssl_context = default_context
         else:
