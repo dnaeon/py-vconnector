@@ -31,6 +31,7 @@ object properties.
 
 """
 
+import ssl
 import logging
 import sqlite3
 
@@ -63,6 +64,7 @@ class VConnector(object):
                  user,
                  pwd,
                  host,
+                 ssl_context=None,
                  cache_maxsize=0,
                  cache_enabled=False,
                  cache_ttl=300,
@@ -72,22 +74,31 @@ class VConnector(object):
         Initializes a new VConnector object
 
         Args:
-            user               (str): Username to use when connecting
-            pwd                (str): Password to use when connecting
-            host               (str): VMware vSphere host to connect to
-            cache_maxsize      (int): Upperbound limit on the number of
-                                      items that will be stored in the cache
-            cache_enabled     (bool): If True use an expiring cache for the
-                                      managed objects
-            cache_ttl          (int): Time in seconds after which a
-                                      cached object is considered as expired
-            cache_housekeeping (int): Time in minutes to perform periodic
-                                      cache housekeeping
+            user                     (str): Username to use when connecting
+            pwd                      (str): Password to use when connecting
+            host                     (str): VMware vSphere host to connect to
+            ssl_context   (ssl.SSLContext): SSL context to use for the connection
+            cache_maxsize            (int): Upperbound limit on the number of
+                                            items that will be stored in the cache
+            cache_enabled           (bool): If True use an expiring cache for the
+                                            managed objects
+            cache_ttl                (int): Time in seconds after which a
+                                            cached object is considered as expired
+            cache_housekeeping       (int): Time in minutes to perform periodic
+                                            cache housekeeping
 
         """
         self.user = user
         self.pwd  = pwd
         self.host = host
+
+        if not ssl_context:
+            default_context = ssl.create_default_context()
+            default_context.verify_mode = ssl.CERT_NONE
+            self.ssl_context = default_context
+        else:
+            self.ssl_context = ssl_context
+
         self._si  = None
         self._perf_counter = None
         self._perf_interval = None
@@ -138,7 +149,8 @@ class VConnector(object):
             self._si = pyVim.connect.SmartConnect(
                 host=self.host,
                 user=self.user,
-                pwd=self.pwd
+                pwd=self.pwd,
+                sslContext=self.ssl_context,
             )
         except Exception as e:
             # TODO: Maybe retry connection after some time
