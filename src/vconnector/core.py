@@ -92,11 +92,16 @@ class VConnector(object):
         self.pwd  = pwd
         self.host = host
 
+        self.ssl_context = None
         if not ssl_context:
-            default_context = ssl.create_default_context()
-            default_context.check_hostname = False
-            default_context.verify_mode = ssl.CERT_NONE
-            self.ssl_context = default_context
+            try:
+                _create_unverified_https_context = ssl._create_unverified_context
+            except AttributeError:
+                # Legacy Python that doesn't verify HTTPS certificates by default
+                pass
+            else:
+                # Handle target environment that doesn't support HTTPS verification
+                self.ssl_context = _create_unverified_https_context()
         else:
             self.ssl_context = ssl_context
 
