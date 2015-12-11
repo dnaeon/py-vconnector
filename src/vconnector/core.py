@@ -25,7 +25,7 @@
 """
 VMware vSphere Connector Module for Python
 
-This module provides classes and methods for managing
+This module provides classes and methods for managing 
 connections to VMware vSphere hosts and retrieving of
 object properties.
 
@@ -55,7 +55,7 @@ class VConnector(object):
 
     Returns:
         VConnector object
-
+    
     Raises:
         VConnectorException
 
@@ -147,10 +147,10 @@ class VConnector(object):
 
         Raises:
              VConnectorException
-
+        
         """
         logging.info('Connecting vSphere Agent to %s', self.host)
-
+        
         try:
             self._si = pyVim.connect.SmartConnect(
                 host=self.host,
@@ -256,7 +256,7 @@ class VConnector(object):
 
         Check the vSphere API documentation for example on
         retrieving object properties:
-
+    
             - http://pubs.vmware.com/vsphere-50/index.jsp#com.vmware.wssdk.pg.doc_50/PG_Ch5_PropertyCollector.7.2.html
 
         Args:
@@ -295,14 +295,14 @@ class VConnector(object):
         # Identify the properties to the retrieved
         property_spec = pyVmomi.vmodl.query.PropertyCollector.PropertySpec()
         property_spec.type = obj_type
-
+                
         if not path_set:
             logging.warning(
                 '[%s] Retrieving all properties for objects, this might take a while...',
                 self.host
             )
             property_spec.all = True
-
+            
         property_spec.pathSet = path_set
 
         # Add the object and property specification to the
@@ -362,7 +362,7 @@ class VConnector(object):
 
     def get_list_view(self, obj):
         """
-        Get a vSphere List View reference
+        Get a vSphere List View reference 
 
         It is up to the caller to take care of destroying the View
         when no longer needed.
@@ -372,7 +372,7 @@ class VConnector(object):
 
         Returns:
             A list view ref to the managed objects
-
+        
         """
         view_ref = self.si.content.viewManager.CreateListView(obj=obj)
 
@@ -393,12 +393,12 @@ class VConnector(object):
 
         Args:
             property_name            (str): Name of the property to look for
-            property_value           (str): Value of the property to match
+            property_value           (str): Value of the property to match 
             obj_type       (pyVmomi.vim.*): Type of the Managed Object
 
         Returns:
             The first matching object
-
+    
         """
         if not issubclass(obj_type, pyVmomi.vim.ManagedEntity):
             raise VConnectorException('Type should be a subclass of vim.ManagedEntity')
@@ -440,10 +440,10 @@ class VConnectorDatabase(object):
 
     Provides an SQLite database backend for storing information
     about vSphere Agents, such as hostname, username, password, etc.
-
+    
     Returns:
         VConnectorDatabase object
-
+    
     Raises:
         VConnectorException
 
@@ -515,7 +515,7 @@ class VConnectorDatabase(object):
 
         Args:
             host (str): Hostname of the vSphere Agent to remove
-
+        
         """
         logging.info('Removing vSphere Agent %s from database', host)
 
@@ -568,7 +568,7 @@ class VConnectorDatabase(object):
         )
         self.conn.commit()
         self.cursor.close()
-
+        
     def disable_agent(self, host):
         """
         Mark a vSphere Agent as disabled
