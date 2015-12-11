@@ -237,6 +237,15 @@ class VConnector(object):
             obj_type=[pyVmomi.vim.ResourcePool]
         )
 
+    def get_distributed_vswitch_view(self):
+        """
+        Get a view ref to all vim.DistributedVirtualSwitch managed objects
+
+        """
+        return self.get_container_view(
+            obj_type=[pyVmomi.vim.DistributedVirtualSwitch]
+        )
+
     def collect_properties(self,
                            view_ref,
                            obj_type,
