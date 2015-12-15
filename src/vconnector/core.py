@@ -68,7 +68,7 @@ class VConnector(object):
                  cache_maxsize=0,
                  cache_enabled=False,
                  cache_ttl=300,
-                 cache_housekeeping=60
+                 cache_housekeeping=0
     ):
         """
         Initializes a new VConnector object
