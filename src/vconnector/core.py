@@ -64,6 +64,7 @@ class VConnector(object):
                  user,
                  pwd,
                  host,
+                 port=443,
                  ssl_context=None,
                  cache_maxsize=0,
                  cache_enabled=False,
@@ -77,6 +78,7 @@ class VConnector(object):
             user                     (str): Username to use when connecting
             pwd                      (str): Password to use when connecting
             host                     (str): VMware vSphere host to connect to
+            port                     (int): VMware vSphere port to connect to
             ssl_context   (ssl.SSLContext): SSL context to use for the connection
             cache_maxsize            (int): Upperbound limit on the number of
                                             items that will be stored in the cache
@@ -91,6 +93,7 @@ class VConnector(object):
         self.user = user
         self.pwd  = pwd
         self.host = host
+        self.port = port
         self.ssl_context = None
 
         if not ssl_context:
@@ -151,6 +154,7 @@ class VConnector(object):
                 host=self.host,
                 user=self.user,
                 pwd=self.pwd,
+                port=self.port,
                 sslContext=self.ssl_context,
             )
         except Exception as e:
