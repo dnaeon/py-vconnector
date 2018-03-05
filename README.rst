@@ -1,11 +1,11 @@
 vConnector - VMware vSphere Connector Module for Python
 =======================================================
 
-.. image:: https://pypip.in/version/vconnector/badge.svg
+.. image:: https://img.shields.io/pypi/v/vconnector.svg
     :target: https://pypi.python.org/pypi/vconnector/
     :alt: Latest Version
 
-.. image:: https://pypip.in/download/vconnector/badge.svg
+.. image:: https://img.shields.io/pypi/dm/vconnector.svg
     :target: https://pypi.python.org/pypi/vconnector/
     :alt: Downloads
 
