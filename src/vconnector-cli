@@ -47,8 +47,11 @@ def init_db(db):
         db (str): Path to the SQLite database file
 
     """
-    db = VConnectorDatabase(db)
-    db.init_db()
+    try:
+        db = VConnectorDatabase(db)
+        db.init_db()
+    except Exception as e:
+        raise SystemExit("Cannot initialize database: {}".format(e))
 
 def add_update_agent(db, user, pwd, host):
     """
@@ -61,12 +64,15 @@ def add_update_agent(db, user, pwd, host):
         host    (str): Hostname of the vSphere server
 
     """
-    db = VConnectorDatabase(db)
-    db.add_update_agent(
-        user=user,
-        pwd=pwd,
-        host=host,
-    )
+    try:
+        db = VConnectorDatabase(db)
+        db.add_update_agent(
+            user=user,
+            pwd=pwd,
+            host=host,
+        )
+    except Exception as e:
+        raise SystemExit("Cannot update database: {}".format(e))
 
 def remove_agent(db, host):
     """
@@ -77,8 +83,11 @@ def remove_agent(db, host):
         host (str): Hostname of the vSphere server
 
     """
-    db = VConnectorDatabase(db)
-    db.remove_agent(host=host)
+    try:
+        db = VConnectorDatabase(db)
+        db.remove_agent(host=host)
+    except Exception as e:
+        raise SystemExit("Cannot update database: {}".format(e))
 
 def get_agents(db):
     """
@@ -88,8 +97,11 @@ def get_agents(db):
         db (str): Path to the vConnector database file
 
     """
-    db = VConnectorDatabase(db)
-    agents = db.get_agents()
+    try:
+        db = VConnectorDatabase(db)
+        agents = db.get_agents()
+    except Exception as e:
+        raise SystemExit("Cannot read database: {}".format(e))
 
     print(tabulate(
         agents,
@@ -106,8 +118,11 @@ def enable_agent(db, host):
         host (str): Hostname of the vSphere Agent to enable
 
     """
-    db = VConnectorDatabase(db)
-    db.enable_agent(host=host)
+    try:
+        db = VConnectorDatabase(db)
+        db.enable_agent(host=host)
+    except Exception as e:
+        raise SystemExit("Cannot update database: {}".format(e))
 
 def disable_agent(db, host):
     """
@@ -118,8 +133,12 @@ def disable_agent(db, host):
         host (str): Hostname of the vSphere Agent to disable
 
     """
-    db = VConnectorDatabase(db)
-    db.disable_agent(host=host)
+    try:
+        db = VConnectorDatabase(db)
+        db.disable_agent(host=host)
+    except Exception as e:
+        raise SystemExit("Cannot update database: {}".format(e))
+
 
 def main():
     usage="""
