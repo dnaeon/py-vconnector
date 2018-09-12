@@ -156,7 +156,7 @@ class VConnector(object):
                 user=self.user,
                 pwd=self.pwd,
                 port=self.port,
-                sslContext=self.ssl_context,
+                sslContext=self.ssl_context
             )
         except Exception as e:
             # TODO: Maybe retry connection after some time
