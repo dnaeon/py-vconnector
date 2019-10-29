@@ -25,8 +25,8 @@ setup(name='vconnector',
         'src/vconnector-cli',
       ],
       install_requires=[
-        'pyvmomi >= 6.0.0',
+        'pyvmomi >= 6.7.3',
         'docopt >= 0.6.2',
-        'tabulate >= 0.7.3',  
+        'tabulate >= 0.8.3',
       ]
 )
